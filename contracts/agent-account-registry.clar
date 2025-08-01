@@ -40,7 +40,7 @@
   bool
 )
 
-;; Auto-register called from agent account on deployment [no need for as-contract when doing so]
+;; Auto-register called from contract to register as agent account on deployment [no need for as-contract when doing so]
 (define-public (auto-register-agent-account (owner principal) (agent principal))
   (begin  
     ;; only ATTESTOR_DEPLOYER can auto-register an agent account it deploys
