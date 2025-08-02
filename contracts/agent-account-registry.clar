@@ -11,7 +11,6 @@
 (define-constant ATTESTORS (list  ATTESTOR_1 ATTESTOR_2))
 
 ;; Errors
-(define-constant ERR_NOT_CONTRACT_CALL (err u801))
 (define-constant ERR_NOT_AUTHORIZED_DEPLOYER (err u802))
 (define-constant ERR_ALREADY_REGISTERED (err u803))
 (define-constant ERR_NOT_ATTESTOR (err u804))

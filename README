@@ -1,0 +1,258 @@
+# Agent Account Registry
+
+A Stacks smart contract for registering and attesting AI agent accounts with multi-level attestation system.
+
+## Overview
+
+The Agent Account Registry provides a decentralized system for registering AI agent accounts and tracking their attestation levels. It implements a trust system where multiple attestors can vouch for agent accounts, increasing their credibility and attestation level.
+
+## Features
+
+- **Auto-registration**: Agent accounts can be automatically registered upon deployment
+- **Multi-level attestation**: Three-tier attestation system (levels 1-3)
+- **Reverse lookups**: Find agent accounts by owner or agent address
+- **Attestor verification**: Only authorized attestors can provide attestations
+- **Comprehensive tracking**: Full audit trail of registrations and attestations
+
+## Contract Architecture
+
+### Constants
+
+- `ATTESTOR_DEPLOYER`: The authorized deployer (`SPW8QZNWKZGVHX012HCBJVJVPS94PXFG578P53TM`)
+- `ATTESTOR_1`: Faktory attestator (`SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22`)
+- `ATTESTOR_2`: AIBTC attestator (`SP2GHGQRWSTM89SQMZXTQJ0GRHV93MSX9J84J7BEA`)
+
+### Data Structures
+
+#### Core Registry Map
+
+```clarity
+agent-account-registry: {
+  owner: principal,
+  agent: principal,
+  attestation-level: uint
+}
+```
+
+#### Reverse Lookup Maps
+
+- `owner-to-agent-account`: Maps owner addresses to their agent accounts
+- `agent-to-agent-account`: Maps agent addresses to their agent accounts
+
+#### Attestation Tracking
+
+```clarity
+agent-account-attestations: {
+  account: principal,
+  attestor: principal
+} -> bool
+```
+
+## Attestation Levels
+
+| Level | Description          | Requirements                    |
+| ----- | -------------------- | ------------------------------- |
+| 1     | Initial registration | Deployed by authorized deployer |
+| 2     | First attestation    | One attestor signature          |
+| 3     | Full attestation     | Two attestor signatures         |
+
+## Public Functions
+
+### Registration Functions
+
+#### `auto-register-agent-account`
+
+```clarity
+(auto-register-agent-account (owner principal) (agent principal))
+```
+
+Automatically registers an agent account during deployment. Only callable by the authorized deployer.
+
+**Parameters:**
+
+- `owner`: The principal who owns the agent account
+- `agent`: The principal representing the AI agent
+
+**Returns:** `(response principal uint)`
+
+#### `register-agent-account`
+
+```clarity
+(register-agent-account (account <agent-account>))
+```
+
+Registers an existing agent account contract that implements the agent-account trait.
+
+**Parameters:**
+
+- `account`: The agent account contract implementing the trait
+
+**Returns:** `(response principal uint)`
+
+### Attestation Functions
+
+#### `attest-agent-account`
+
+```clarity
+(attest-agent-account (account principal))
+```
+
+Allows authorized attestors to attest to an agent account, increasing its attestation level.
+
+**Parameters:**
+
+- `account`: The agent account to attest
+
+**Returns:** `(response uint uint)`
+
+**Requirements:**
+
+- Caller must be an authorized attestor
+- Account must be registered
+- Attestor cannot have already attested this account
+
+## Read-Only Functions
+
+### Registry Information
+
+#### `get-registry-config`
+
+Returns the registry configuration including attestor addresses and maximum attestation level.
+
+#### `get-agent-account-info`
+
+```clarity
+(get-agent-account-info (account principal))
+```
+
+Returns complete information about a registered agent account.
+
+### Lookup Functions
+
+#### `get-agent-account-by-owner`
+
+```clarity
+(get-agent-account-by-owner (owner principal))
+```
+
+Finds an agent account by its owner address.
+
+#### `get-agent-account-by-agent`
+
+```clarity
+(get-agent-account-by-agent (agent principal))
+```
+
+Finds an agent account by its agent address.
+
+### Attestation Queries
+
+#### `get-attestation-level`
+
+```clarity
+(get-attestation-level (account principal))
+```
+
+Returns the current attestation level of an account.
+
+#### `is-account-attested`
+
+```clarity
+(is-account-attested (account principal) (min-level uint))
+```
+
+Checks if an account meets a minimum attestation level.
+
+#### `get-account-attestors`
+
+```clarity
+(get-account-attestors (account principal))
+```
+
+Returns which attestors have signed for a specific account.
+
+## Error Codes
+
+| Code | Constant                      | Description                           |
+| ---- | ----------------------------- | ------------------------------------- |
+| 802  | `ERR_NOT_AUTHORIZED_DEPLOYER` | Caller is not the authorized deployer |
+| 803  | `ERR_ALREADY_REGISTERED`      | Account is already registered         |
+| 804  | `ERR_NOT_ATTESTOR`            | Caller is not an authorized attestor  |
+| 805  | `ERR_GET_CONFIG_FAILED`       | Failed to get account configuration   |
+| 806  | `ERR_ACCOUNT_NOT_FOUND`       | Account not found in registry         |
+
+## Usage Examples
+
+### Registering an Agent Account
+
+```clarity
+;; Auto-register during deployment (only by authorized deployer)
+(contract-call? .agent-account-registry auto-register-agent-account 'SP1OWNER 'SP1AGENT)
+
+;; Register existing account
+(contract-call? .agent-account-registry register-agent-account .my-agent-account)
+```
+
+### Attesting an Account
+
+```clarity
+;; Attestor provides attestation
+(contract-call? .agent-account-registry attest-agent-account 'SP1AGENTACCOUNT)
+```
+
+### Querying Information
+
+```clarity
+;; Get account info
+(contract-call? .agent-account-registry get-agent-account-info 'SP1AGENTACCOUNT)
+
+;; Check attestation level
+(contract-call? .agent-account-registry get-attestation-level 'SP1AGENTACCOUNT)
+
+;; Verify minimum attestation
+(contract-call? .agent-account-registry is-account-attested 'SP1AGENTACCOUNT u2)
+```
+
+## Events
+
+The contract emits the following events:
+
+### Agent Account Registered
+
+```clarity
+{
+  type: "agent-account-registered",
+  account: principal,
+  owner: principal,
+  agent: principal,
+  attestation-level: uint
+}
+```
+
+### Account Attested
+
+```clarity
+{
+  type: "account-attested",
+  account: principal,
+  attestor: principal,
+  new-attestation-level: uint,
+  max-attestation-level: uint
+}
+```
+
+## Security Considerations
+
+1. **Authorization**: Only the authorized deployer can register accounts
+2. **Attestor Verification**: Attestations can only be provided by authorized attestors
+3. **Duplicate Prevention**: Prevents double registration and double attestation
+4. **Immutable Records**: Once registered, core account information cannot be changed
+
+## Dependencies
+
+- Requires the `aibtc-agent-account-traits.aibtc-account-config` trait
+- Agent accounts must implement the required trait interface
+
+## License
+
+This contract is part of the AIBTC ecosystem. Please refer to the project's license for usage terms.
