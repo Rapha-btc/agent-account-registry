@@ -7,8 +7,16 @@ cache_dir = './.cache'
 
 [[project.requirements]]
 contract_id = 'SPW8QZNWKZGVHX012HCBJVJVPS94PXFG578P53TM.aibtc-agent-account-traits'
+
+[[project.requirements]]
+contract_id = 'SPW8QZNWKZGVHX012HCBJVJVPS94PXFG578P53TM.aibtc-dao-traits'
 [contracts.agent-account-registry]
 path = 'contracts/agent-account-registry.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.aibtc-acct-SP3YT-XVS7C-SP3ZA-105TG]
+path = 'contracts/aibtc-acct-SP3YT-XVS7C-SP3ZA-105TG.clar'
 clarity_version = 3
 epoch = 3.1
 [repl.analysis]

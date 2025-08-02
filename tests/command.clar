@@ -43,6 +43,7 @@ clarinet console
 (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-account-registry get-attestation-level tx-sender)
 (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-account-registry is-account-attested tx-sender u1)
 ```
+(contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-account-registry get-agent-account-info 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-acct-SP3YT-XVS7C-SP3ZA-105TG)
 
 ## 6. Test attestation functions
 ```clarity
@@ -51,6 +52,10 @@ clarinet console
 ::set_tx_sender SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22
 (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-account-registry attest-agent-account 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
 ::set_tx_sender SP2GHGQRWSTM89SQMZXTQJ0GRHV93MSX9J84J7BEA
+
+(contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-account-registry attest-agent-account 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-acct-SP3YT-XVS7C-SP3ZA-105TG)
+
+
 ;; Check attestation status
 (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-account-registry has-attestor-signed 
   'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM 
@@ -107,3 +112,5 @@ contract-caller
 - Watch for error codes (u801, u802, etc.) to debug issues
 
 Start with the basic read-only functions first, then move to registration and attestation tests!
+
+(contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-account-registry register-agent-account 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-acct-SP3YT-XVS7C-SP3ZA-105TG)
