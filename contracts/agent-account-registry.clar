@@ -1,48 +1,39 @@
 ;; Agent Account Registry
 ;; Auto-registration with attestation levels
-
 (use-trait agent-account 'SPW8QZNWKZGVHX012HCBJVJVPS94PXFG578P53TM.aibtc-agent-account-traits.aibtc-account-config)
 
-;; Constants
-(define-constant ATTESTOR_DEPLOYER tx-sender) ;; 'SPW8QZNWKZGVHX012HCBJVJVPS94PXFG578P53TM
-(define-constant ATTESTOR_1 'SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22) ;; faktory attestator
-(define-constant ATTESTOR_2 'SP2GHGQRWSTM89SQMZXTQJ0GRHV93MSX9J84J7BEA) ;; aibtc attestator 
+(define-constant ATTESTOR_DEPLOYER 'SP2Z94F6QX847PMXTPJJ2ZCCN79JZDW3PJ4E6ZABY)
+(define-constant ATTESTOR_1 'SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22)
+(define-constant ATTESTOR_2 'SP2GHGQRWSTM89SQMZXTQJ0GRHV93MSX9J84J7BEA)
 
 (define-constant ATTESTORS (list  ATTESTOR_1 ATTESTOR_2))
 
-;; Errors
 (define-constant ERR_NOT_AUTHORIZED_DEPLOYER (err u802))
 (define-constant ERR_ALREADY_REGISTERED (err u803))
 (define-constant ERR_NOT_ATTESTOR (err u804))
 (define-constant ERR_GET_CONFIG_FAILED (err u805))
 (define-constant ERR_ACCOUNT_NOT_FOUND (err u806))
 
-;; Maps
-;; Core registry: agent-account -> {owner, agent, attestation-level}
+;; agent-account -> {owner, agent, attestation-level}
 (define-map agent-account-registry
   principal 
   {
     owner: principal,
     agent: principal,
     attestation-level: uint 
-    ;;  anyone who reads the contract can understand what max attestation is -> no need for explicit max-attestation-level -> redundant?
   }
 )
 
-;; Reverse lookup: owner -> agent-account, agent -> agent-account
 (define-map owner-to-agent-account principal principal)
 (define-map agent-to-agent-account principal principal)
 
-;; Track attestations 
 (define-map agent-account-attestations
   { account: principal, attestor: principal }
   bool
 )
 
-;; Auto-register called from contract to register as agent account on deployment [no need for as-contract when doing so]
 (define-public (auto-register-agent-account (owner principal) (agent principal))
   (begin  
-    ;; only ATTESTOR_DEPLOYER can auto-register an agent account it deploys
     (asserts! (is-eq tx-sender ATTESTOR_DEPLOYER) ERR_NOT_AUTHORIZED_DEPLOYER)
     (do-register-account contract-caller owner agent)
   )
@@ -69,17 +60,17 @@
     (asserts! (map-insert owner-to-agent-account owner account) ERR_ALREADY_REGISTERED)
     (asserts! (map-insert agent-to-agent-account agent account) ERR_ALREADY_REGISTERED)
     (print {
-      type: "agent-account-registered",
-      account: account,
-      owner: owner,
-      agent: agent,
-      attestation-level: u1
+      notification: "agent-account-registered",
+      payload: {
+        account: account,
+        owner: owner,
+        agent: agent,
+        attestation-level: u1}
     })
     (ok account)
   )
 )
 
-;; ---- Attestation Functions ----
 (define-public (attest-agent-account (account principal))
   (let ((registry-entry (unwrap! (map-get? agent-account-registry account) ERR_ACCOUNT_NOT_FOUND))
     (current-level (get attestation-level registry-entry))
@@ -88,22 +79,22 @@
     (asserts! (map-insert agent-account-attestations { account: account, attestor: tx-sender } true) ERR_ALREADY_REGISTERED)
     (map-set agent-account-registry account (merge registry-entry { attestation-level: new-level }))   
       (print {
-        type: "account-attested",
-        account: account,
-        attestor: tx-sender,
-        new-attestation-level: new-level,
-        max-attestation-level: u3 ;; (+ (len ATTESTORS) u1)
+        notification: "account-attested",
+          payload: {
+            account: account,
+            attestor: tx-sender,
+            new-attestation-level: new-level,
+            max-attestation-level: u3 }
       })
       (ok new-level) 
   )
 )
 
-;; ---- Read ----
 (define-read-only (get-registry-config)
   {
     attestor-deployer: ATTESTOR_DEPLOYER,
     attestors: ATTESTORS,
-    max-attestation-level: u3 ;; (+ (len ATTESTORS) u1)
+    max-attestation-level: u3 
   }
 )
 
@@ -133,7 +124,6 @@
   )
 )
 
-;; ---- Helper Functions ----
 (define-read-only (is-attestor (who principal))
   (is-some (index-of ATTESTORS who))
 )
@@ -146,7 +136,6 @@
   (default-to false (map-get? agent-account-attestations { account: account, attestor: attestor }))
 )
 
-;; Get all attestors who have signed for an account
 (define-read-only (get-account-attestors (account principal))
   {
     attestor-deployer: (is-account-attested account u1),
