@@ -37,7 +37,7 @@
 (define-public (auto-register-agent-account (owner principal) (agent principal))
   (begin  
     (asserts! (is-eq tx-sender ATTESTOR_DEPLOYER) ERR_NOT_AUTHORIZED_DEPLOYER)
-    (try! (validate-principals contract-caller owner))
+    ;; (try! (validate-principals contract-caller owner))
     (do-register-account contract-caller owner agent)
   )
 )
@@ -50,7 +50,7 @@
     (agent (get agent ai-config))
   )
     (asserts! (is-eq tx-sender ATTESTOR_DEPLOYER) ERR_NOT_AUTHORIZED_DEPLOYER)
-    (try! (validate-principals agent-account-address owner))
+    ;; (try! (validate-principals agent-account-address owner))
     (do-register-account agent-account-address owner agent)
   )
 )
@@ -74,6 +74,7 @@
     (ok account)
   )
 )
+
 (define-private (validate-principals (account principal) (owner principal))
   (let (
     (account-parts (unwrap-panic (principal-destruct? account)))

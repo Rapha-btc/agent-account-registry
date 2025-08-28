@@ -21,8 +21,8 @@
 (define-constant SELF (as-contract tx-sender))
 
 ;; owner and agent addresses
-(define-constant ACCOUNT_OWNER 'SP3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZJRXVS7C) ;; owner (user/creator of account, full access)
-(define-constant ACCOUNT_AGENT 'SP3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKP9105TG) ;; agent (can only take approved actions)
+(define-constant ACCOUNT_OWNER 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5) ;; 'SP3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZJRXVS7C) ;; owner (user/creator of account, full access)
+(define-constant ACCOUNT_AGENT 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG) ;; 'SP3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKP9105TG) ;; agent (can only take approved actions)
 
 (define-constant SBTC_TOKEN 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token) ;; sBTC token
 
