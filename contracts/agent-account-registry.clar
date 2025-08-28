@@ -2,7 +2,7 @@
 ;; Auto-registration with attestation levels
 (use-trait agent-account 'SPW8QZNWKZGVHX012HCBJVJVPS94PXFG578P53TM.aibtc-agent-account-traits.aibtc-account-config)
 
-(define-constant ATTESTOR_DEPLOYER tx-sender) ;; 'SP2Z94F6QX847PMXTPJJ2ZCCN79JZDW3PJ4E6ZABY
+(define-constant ATTESTOR_DEPLOYER 'SP2Z94F6QX847PMXTPJJ2ZCCN79JZDW3PJ4E6ZABY)
 (define-constant ATTESTOR_1 'SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22)
 (define-constant ATTESTOR_2 'SP2GHGQRWSTM89SQMZXTQJ0GRHV93MSX9J84J7BEA)
 
@@ -37,7 +37,7 @@
 (define-public (auto-register-agent-account (owner principal) (agent principal))
   (begin  
     (asserts! (is-eq tx-sender ATTESTOR_DEPLOYER) ERR_NOT_AUTHORIZED_DEPLOYER)
-    ;; (try! (validate-principals contract-caller owner))
+    (try! (validate-principals contract-caller owner))
     (do-register-account contract-caller owner agent)
   )
 )
@@ -50,7 +50,7 @@
     (agent (get agent ai-config))
   )
     (asserts! (is-eq tx-sender ATTESTOR_DEPLOYER) ERR_NOT_AUTHORIZED_DEPLOYER)
-    ;; (try! (validate-principals agent-account-address owner))
+    (try! (validate-principals agent-account-address owner))
     (do-register-account agent-account-address owner agent)
   )
 )
