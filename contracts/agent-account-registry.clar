@@ -13,6 +13,8 @@
 (define-constant ERR_NOT_ATTESTOR (err u804))
 (define-constant ERR_GET_CONFIG_FAILED (err u805))
 (define-constant ERR_ACCOUNT_NOT_FOUND (err u806))
+(define-constant ERR_INVALID_AGENT_TYPE (err u807))
+(define-constant ERR_INVALID_OWNER_TYPE (err u808))
 
 ;; agent-account -> {owner, agent, attestation-level}
 (define-map agent-account-registry
@@ -35,6 +37,7 @@
 (define-public (auto-register-agent-account (owner principal) (agent principal))
   (begin  
     (asserts! (is-eq tx-sender ATTESTOR_DEPLOYER) ERR_NOT_AUTHORIZED_DEPLOYER)
+    (try! (validate-principals contract-caller owner))
     (do-register-account contract-caller owner agent)
   )
 )
@@ -47,6 +50,7 @@
     (agent (get agent ai-config))
   )
     (asserts! (is-eq tx-sender ATTESTOR_DEPLOYER) ERR_NOT_AUTHORIZED_DEPLOYER)
+    (try! (validate-principals agent-account-address owner))
     (do-register-account agent-account-address owner agent)
   )
 )
@@ -68,6 +72,18 @@
         attestation-level: u1}
     })
     (ok account)
+  )
+)
+(define-private (validate-principals (account principal) (owner principal))
+  (let (
+    (account-parts (unwrap-panic (principal-destruct? account)))
+    (owner-parts (unwrap-panic (principal-destruct? owner)))
+  )
+    (begin
+      (asserts! (is-some (get name account-parts)) ERR_INVALID_AGENT_TYPE)
+      (asserts! (is-none (get name owner-parts)) ERR_INVALID_OWNER_TYPE)
+      (ok true)
+    )
   )
 )
 
